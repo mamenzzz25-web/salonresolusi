@@ -1,1 +1,302 @@
- masih coba
+import java.util.Scanner;
+
+public class Main {
+    // Simulasi database statis & state management aplikasi
+    static int kuotaKursiJamTerpilih = 4; 
+    static String statusPembayaran = "Belum Bayar";
+    static String statusPelayanan = "Belum Mulai";
+    static String kapsterTerpilih = "";
+    static int totalBiaya = 0; 
+    static String detailPelayanan = "";
+
+    // Fungsi utilitas untuk menampilkan daftar menu pelayanan lengkap
+    public static void tampilkanMenu() {
+        System.out.println("====================================================================");
+        System.out.println("                      DAFTAR LAYANAN SALON PINTAR                   ");
+        System.out.println("====================================================================");
+        System.out.println(" [1]  Potong Cowok                                   : Rp20.000");
+        System.out.println(" [2]  Potong Cewek                                   : Rp25.000");
+        System.out.println(" [3]  Potong + Cuci + Catok (Free Tonic & Vitamin)   : Rp60.000");
+        System.out.println(" [4]  Cuci Catok (Free Tonic & Vitamin)              : Rp35.000");
+        System.out.println(" [5]  Cuci Blow                                      : Rp35.000");
+        System.out.println(" [6]  Cuci Curly                                     : Rp40.000");
+        System.out.println(" [7]  Kerok Alis                                     : Rp15.000");
+        System.out.println(" [8]  Potong Poni                                    : Rp10.000");
+        System.out.println(" --- PEWARNAAN --- ");
+        System.out.println(" [9]  Toning Cowok                                   : Rp50.000");
+        System.out.println(" [10] Toning Cewek                                   : Rp70.000");
+        System.out.println(" [11] Fashion Colour                                 : Rp150.000");
+        System.out.println(" [12] Highlight                                      : Rp180.000");
+        System.out.println(" [13] Bleaching                                      : Rp70.000");
+        System.out.println(" --- SMOOTHING --- ");
+        System.out.println(" [14] Matrix                                         : Rp250.000");
+        System.out.println(" [15] Ilvasto                                        : Rp300.000");
+        System.out.println(" [16] Loreal                                         : Rp350.000");
+        System.out.println(" [17] Goozer                                         : Rp375.000");
+        System.out.println(" [18] Keratin Smoothing                              : Rp400.000");
+        System.out.println(" --- TREATMENT --- ");
+        System.out.println(" [19] Creambath                                      : Rp50.000");
+        System.out.println(" [20] Hair Spa                                       : Rp60.000");
+        System.out.println(" [21] Masker Biasa                                   : Rp50.000");
+        System.out.println(" [22] Masker Keratin                                 : Rp60.000");
+        System.out.println(" [23] Terapi Kutu                                    : Rp90.000");
+        System.out.println(" [24] Terapi Ketombe                                 : Rp80.000");
+        System.out.println("====================================================================");
+    }
+
+    // Fungsi utilitas untuk memproses pilihan menu dan mengambil data nama & harga
+    public static Object[] prosesPilihanMenu(int pilihan) {
+        String namaMenu = "";
+        int hargaMenu = 0;
+        String kategoriKeahlian = ""; 
+
+        switch (pilihan) {
+            case 1: namaMenu = "Potong Cowok"; hargaMenu = 20000; kategoriKeahlian = "Potong"; break;
+            case 2: namaMenu = "Potong Cewek"; hargaMenu = 25000; kategoriKeahlian = "Potong"; break;
+            case 3: namaMenu = "Potong+Cuci+Catok"; hargaMenu = 60000; kategoriKeahlian = "Potong"; break;
+            case 4: namaMenu = "Cuci Catok"; hargaMenu = 35000; kategoriKeahlian = "Potong"; break;
+            case 5: namaMenu = "Cuci Blow"; hargaMenu = 35000; kategoriKeahlian = "Potong"; break;
+            case 6: namaMenu = "Cuci Curly"; hargaMenu = 40000; kategoriKeahlian = "Potong"; break;
+            case 7: namaMenu = "Kerok Alis"; hargaMenu = 15000; kategoriKeahlian = "Potong"; break;
+            case 8: namaMenu = "Potong Poni"; hargaMenu = 10000; kategoriKeahlian = "Potong"; break;
+            case 9: namaMenu = "Toning Cowok"; hargaMenu = 50000; kategoriKeahlian = "Pewarna"; break;
+            case 10: namaMenu = "Toning Cewek"; hargaMenu = 70000; kategoriKeahlian = "Pewarna"; break;
+            case 11: namaMenu = "Fashion Colour"; hargaMenu = 150000; kategoriKeahlian = "Pewarna"; break;
+            case 12: namaMenu = "Highlight"; hargaMenu = 180000; kategoriKeahlian = "Pewarna"; break;
+            case 13: namaMenu = "Bleaching"; hargaMenu = 70000; kategoriKeahlian = "Pewarna"; break;
+            case 14: namaMenu = "Matrix Smoothing"; hargaMenu = 250000; kategoriKeahlian = "Smoothing"; break;
+            case 15: namaMenu = "Ilvasto Smoothing"; hargaMenu = 300000; kategoriKeahlian = "Smoothing"; break;
+            case 16: namaMenu = "Loreal Smoothing"; hargaMenu = 350000; kategoriKeahlian = "Smoothing"; break;
+            case 17: namaMenu = "Goozer Smoothing"; hargaMenu = 375000; kategoriKeahlian = "Smoothing"; break;
+            case 18: namaMenu = "Keratin Smoothing"; hargaMenu = 400000; kategoriKeahlian = "Smoothing"; break;
+            case 19: namaMenu = "Creambath"; hargaMenu = 50000; kategoriKeahlian = "Treatment"; break;
+            case 20: namaMenu = "Hair Spa"; hargaMenu = 60000; kategoriKeahlian = "Treatment"; break;
+            case 21: namaMenu = "Masker Biasa"; hargaMenu = 50000; kategoriKeahlian = "Treatment"; break;
+            case 22: namaMenu = "Masker Keratin"; hargaMenu = 60000; kategoriKeahlian = "Treatment"; break;
+            case 23: namaMenu = "Terapi Kutu"; hargaMenu = 90000; kategoriKeahlian = "Treatment"; break;
+            case 24: namaMenu = "Terapi Ketombe"; hargaMenu = 80000; kategoriKeahlian = "Treatment"; break;
+            default: namaMenu = "Tidak Valid"; hargaMenu = 0; kategoriKeahlian = "Tidak Valid"; break;
+        }
+        return new Object[]{namaMenu, hargaMenu, kategoriKeahlian};
+    }
+
+    public static void main(String[] args) {
+        Scanner input = new Scanner(System.in);
+        
+        System.out.println("=== PROGRAM JAVA: SISTEM KASIR SALON PINTAR ONSITE V6 ===");
+        
+        // ================= FASE 1: KONSULTASI / REGISTRASI DI DEPAN =================
+        System.out.print("Masukkan Nama Pelanggan: ");
+        String nama = input.nextLine();
+        
+        tampilkanMenu();
+        
+        System.out.print("Pilih Perawatan Awal (Gunakan koma jika lebih dari 1, contoh: 1,24): ");
+        String inputMenu = input.nextLine(); 
+
+        String[] semuaPilihan = inputMenu.split(",");
+        
+        String keahlianUtamaDibutuhkan = ""; 
+        int jumlahLayananAwal = 0;
+
+        for (String pilihanStr : semuaPilihan) {
+            try {
+                int pilihanAwal = Integer.parseInt(pilihanStr.trim());
+                
+                Object[] hasilAwal = prosesPilihanMenu(pilihanAwal);
+                String namaLayananAwal = (String) hasilAwal[0];
+                int hargaLayananAwal = (Integer) hasilAwal[1];
+                String keahlianDibutuhkan = (String) hasilAwal[2];
+                
+                if (namaLayananAwal.equals("Tidak Valid")) {
+                    System.out.println("[SISTEM] Kode menu '" + pilihanAwal + "' salah! Layanan ini dilewati.");
+                    continue;
+                }
+                
+                if (jumlahLayananAwal == 0) {
+                    keahlianUtamaDibutuhkan = keahlianDibutuhkan;
+                    detailPelayanan = namaLayananAwal + " (Rp" + hargaLayananAwal + ")";
+                } else {
+                    detailPelayanan += "\n                      " + namaLayananAwal + " (Rp" + hargaLayananAwal + ")";
+                }
+                
+                totalBiaya += hargaLayananAwal;
+                jumlahLayananAwal++;
+                
+            } catch (NumberFormatException e) {
+                System.out.println("[SISTEM] Format input '" + pilihanStr + "' bukan angka! Dilewati.");
+            }
+        }
+
+        if (jumlahLayananAwal == 0) {
+            System.out.println("[SISTEM] Tidak ada pelayanan valid yang dipilih. Program dihentikan.");
+            input.close();
+            return;
+        }
+        
+        System.out.print("Masukkan Jam Kedatangan (Format 24 Jam, Contoh: 10.30): ");
+        double jam = input.nextDouble();
+        
+        if (jam < 9.00 || jam > 22.00) {
+            System.out.println("[ALGORITMA] Transaksi Ditolak! Salon hanya buka dari jam 09.00 Pagi sampai 22.00 Malam.");
+            input.close();
+            return; 
+        }
+        
+        String shift = "";
+        if (jam < 12.00) {
+            shift = "Pagi";
+        } else if (jam < 17.00) { 
+            shift = "Siang";
+        } else {
+            shift = "Malam";
+        }
+        System.out.println("[ALGORITMA] Jam " + jam + " dialokasikan ke Shift: " + shift);
+        
+        if (kuotaKursiJamTerpilih >= 6) {
+            System.out.println("[ALGORITMA] Transaksi Ditolak! Kuota kursi penuh di jam tersebut.");
+            input.close();
+            return;
+        } else {
+            kuotaKursiJamTerpilih++; 
+        }
+        
+        if (shift.equals("Pagi")) {
+            if (keahlianUtamaDibutuhkan.equals("Pewarna") || keahlianUtamaDibutuhkan.equals("Smoothing")) {
+                kapsterTerpilih = "Mas Budi (Spesialis Kimia - Shift Pagi)";
+            } else {
+                kapsterTerpilih = "Mbak Siti (Spesialis Gunting & Treatment - Shift Pagi)";
+            }
+        } else if (shift.equals("Siang")) {
+            if (keahlianUtamaDibutuhkan.equals("Pewarna") || keahlianUtamaDibutuhkan.equals("Smoothing")) {
+                kapsterTerpilih = "Mbak Nana (Spesialis Kimia - Shift Siang)";
+            } else {
+                kapsterTerpilih = "Mas Yahya (Spesialis Gunting & Treatment - Shift Siang)";
+            }
+        } else { 
+            if (keahlianUtamaDibutuhkan.equals("Pewarna") || keahlianUtamaDibutuhkan.equals("Smoothing")) {
+                kapsterTerpilih = "mba Yuli (Spesialis Kimia - Shift Malam)";
+            } else {
+                kapsterTerpilih = "Mas Joko (Spesialis Gunting & Treatment - Shift Malam)";
+            }
+        }
+        
+        statusPelayanan = "Terkonfirmasi";
+        statusPembayaran = "Belum Bayar"; 
+        
+        System.out.println("\n--- NOTA REGISTRASI ANTREAN AWAL (DI DEPAN) ---");
+        System.out.println("Nama Pelanggan    : " + nama);
+        System.out.println("Rincian Perawatan : " + detailPelayanan);
+        System.out.println("Kapster Alokasi   : " + kapsterTerpilih);
+        System.out.println("=============================================");
+        System.out.println("TOTAL ESTIMASI    : Rp" + totalBiaya);
+        System.out.println("Status Pembayaran : " + statusPembayaran);
+        System.out.println("-----------------------------------------------\n");
+        
+        // ================= FASE 2: PELAYANAN & KONFIRMASI TAMBAH PELAYANAN =================
+        System.out.println("[INFO] Pelanggan saat ini sedang berada di kursi pelayanan oleh " + kapsterTerpilih + "...");
+        
+        boolean loopTambah = true;
+        while (loopTambah) {
+            System.out.print("Apakah pelanggan ingin menambah pelayanan lagi di tempat? (1 = YA, 0 = TIDAK): ");
+            int tambahLayanan = input.nextInt();
+            input.nextLine(); // Membersihkan sisa enter setelah input integer
+            
+            if (tambahLayanan == 1) {
+                tampilkanMenu(); 
+                System.out.print("Pilih Menu Tambahan (Gunakan koma jika lebih dari 1, contoh: 19,21): ");
+                String inputTambahan = input.nextLine();
+                
+                String[] semuaTambahan = inputTambahan.split(",");
+                
+                // Variabel sementara untuk menampung rincian tambahan yang lolos validasi
+                String rincianBaruValid = "";
+                int totalBiayaTambahanValid = 0;
+                
+                for (String tambStr : semuaTambahan) {
+                    try {
+                        int pilihanTambahan = Integer.parseInt(tambStr.trim());
+                        Object[] hasilTambahan = prosesPilihanMenu(pilihanTambahan);
+                        String namaTambahan = (String) hasilTambahan[0];
+                        int hargaTambahan = (Integer) hasilTambahan[1];
+                        
+                        if (namaTambahan.equals("Tidak Valid")) {
+                            System.out.println("[SISTEM] Kode menu '" + pilihanTambahan + "' tidak valid! Dilewati.");
+                            continue; 
+                        }
+                        
+                        // Kumpulkan item tambahan yang valid
+                        if (rincianBaruValid.equals("")) {
+                            rincianBaruValid = namaTambahan + " (Rp" + hargaTambahan + ")";
+                        } else {
+                            rincianBaruValid += ", " + namaTambahan + " (Rp" + hargaTambahan + ")";
+                        }
+                        totalBiayaTambahanValid += hargaTambahan;
+                        
+                    } catch (NumberFormatException e) {
+                        System.out.println("[SISTEM] Format input '" + tambStr + "' bukan angka! Dilewati.");
+                    }
+                }
+                
+                // Jika ada item tambahan yang valid, mintalah konfirmasi kasir
+                if (totalBiayaTambahanValid > 0) {
+                    System.out.println("\n[KONFIRMASI ADMIN / KASIR]");
+                    System.out.println("Yakin menambah: " + rincianBaruValid);
+                    System.out.println("Total tambahan senilai Rp" + totalBiayaTambahanValid + " ke billing " + nama + "?");
+                    System.out.print("Ketik 1 jika YA (Setuju), ketik 0 jika TIDAK (Batalkan): ");
+                    int konfirmasi = input.nextInt();
+                    input.nextLine(); // Membersihkan sisa enter
+                    
+                    if (konfirmasi == 1) {
+                        // Pecah kembali untuk dimasukkan ke detailPelayanan utama dengan rapi (ganti koma jadi baris baru)
+                        String[] barisBaru = rincianBaruValid.split(", ");
+                        for (String b : barisBaru) {
+                            detailPelayanan += "\n                      " + b;
+                        }
+                        totalBiaya += totalBiayaTambahanValid; 
+                        System.out.println("[SISTEM] BERHASIL KONFIRMASI. Layanan tambahan ditambahkan ke billing.");
+                    } else {
+                        System.out.println("[SISTEM] PENAMBAHAN DIBATALKAN. Billing tidak berubah.");
+                    }
+                } else {
+                    System.out.println("[SISTEM] Tidak ada menu tambahan valid yang diproses.");
+                }
+                
+                System.out.println("Total Tagihan Sementara: Rp" + totalBiaya + "\n");
+                
+            } else {
+                loopTambah = false; 
+            }
+        }
+        
+        statusPelayanan = "Selesai";
+        System.out.println("\n[INFO] Pelayanan selesai. Pelanggan diarahkan menuju ke meja kasir toko untuk pembayaran.");
+        
+        // ================= FASE 3: BAYAR DI BELAKANG (OTOMATIS CASH) =================
+        System.out.println("\n--- DASHBOARD ADMIN / KASIR TOKO ---");
+        System.out.println("Pelanggan Atas Nama : " + nama);
+        System.out.println("Daftar Perawatan    : " + detailPelayanan);
+        System.out.println("TOTAL TAGIHAN AKHIR : Rp" + totalBiaya);
+        System.out.println("Status Pelayanan    : " + statusPelayanan);
+        
+        String jenisBayar = "Cash (Tunai)";
+        statusPembayaran = "Lunas"; 
+        
+        System.out.println("\n--- NOTA FINAL LUNAS (DICETAK KASIR TOKO) ---");
+        System.out.println("Nama Pelanggan    : " + nama);
+        System.out.println("Rincian Perawatan : " + detailPelayanan);
+        System.out.println("=============================================");
+        System.out.println("TOTAL PEMBAYARAN  : Rp" + totalBiaya);
+        System.out.println("Metode Bayar      : " + jenisBayar);
+        System.out.println("Status Pembayaran : " + statusPembayaran);
+        System.out.println("Status Pelayanan  : " + statusPelayanan);
+        System.out.println("---------------------------------------------\n");
+        
+        System.out.print("Masukkan nilai rating untuk Kapster " + kapsterTerpilih + " (1-5 Bintang): ");
+        int rating = input.nextInt();
+        System.out.println("[SISTEM] Sukses menyimpan data rating " + rating + " ke tabel kinerja.");
+        System.out.println("Terima kasih! Seluruh data transaksi kelompok Zanuar, Chelsea, Ammar berhasil diperbarui.");
+        
+        input.close();
+    }
+}
