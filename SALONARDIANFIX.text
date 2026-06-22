@@ -225,13 +225,13 @@ public class Main {
                         }
                         break; 
                     } else {
-                        System.out.println("[SISTEM] Silakan ketik jam pengganti...");
+                        System.out.println(" Silakan ketik jam pengganti...");
                         continue; 
                     }
                 } else {
                     databaseKapsterJam[indexJam][kolomKapster] = true;
                     jamFinal = jamPilihan;
-                    System.out.println("[SISTEM] Jam " + jamFinal + ".00 tersedia karena menggunakan kapster berbeda / masih kosong.");
+                    System.out.println("Jam " + jamFinal + ".00 tersedia karena menggunakan kapster berbeda / masih kosong.");
                     break;
                 }
             }
@@ -310,7 +310,7 @@ public class Main {
                             }
                             totalBiayaTambahanValid += hargaTambahan;
                         } catch (NumberFormatException e) {
-                            System.out.println("[SISTEM] Format input '" + tambStr + "' bukan angka! Dilewati.");
+                            System.out.println("Format input '" + tambStr + "' bukan angka! Dilewati.");
                         }
                     }
                     
