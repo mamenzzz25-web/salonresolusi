@@ -24,7 +24,7 @@ public class Main {
 
     public static void tampilkanMenu() {
         System.out.println("====================================================================");
-        System.out.println("                      DAFTAR LAYANAN SALON PINTAR                   ");
+        System.out.println("                      DAFTAR LAYANAN SALON ARDIAN               ");
         System.out.println("====================================================================");
         System.out.println(" [1]  Potong Cowok                                   : Rp20.000");
         System.out.println(" [2]  Potong Cewek                                   : Rp25.000");
@@ -93,7 +93,7 @@ public class Main {
         
         while (true) {
             System.out.println("\n=========================================================");
-            System.out.println("       SISTEM KASIR SALON PINTAR ONSITE V6 (LOOP MODE)   ");
+            System.out.println("       SISTEM SALON ARDIAN ");
             System.out.println("=========================================================");
             System.out.println("1. Tambah Transaksi Pelanggan Baru");
             System.out.println("2. Lihat Daftar Booking Pelanggan (Urut)");
@@ -103,7 +103,7 @@ public class Main {
             input.nextLine(); 
 
             if (menuUtama == 3) {
-                System.out.println("[SISTEM] Terima kasih! Program selesai.");
+                System.out.println("Terima kasih! Program selesai.");
                 break;
             } else if (menuUtama == 2) {
                 System.out.println("\n======================================================================================================");
@@ -124,7 +124,7 @@ public class Main {
                 }
                 continue;
             } else if (menuUtama != 1) {
-                System.out.println("[SISTEM] Pilihan tidak valid!");
+                System.out.println("Pilihan tidak valid!");
                 continue;
             }
 
@@ -155,7 +155,7 @@ public class Main {
                     String keahlianDibutuhkan = (String) hasilAwal[2];
                     
                     if (namaLayananAwal.equals("Tidak Valid")) {
-                        System.out.println("[SISTEM] Kode menu '" + pilihanAwal + "' salah! Layanan ini dilewati.");
+                        System.out.println("Kode menu '" + pilihanAwal + "' salah! Layanan ini dilewati.");
                         continue;
                     }
                     if (jumlahLayananAwal == 0) {
@@ -167,12 +167,12 @@ public class Main {
                     totalBiaya += hargaLayananAwal;
                     jumlahLayananAwal++;
                 } catch (NumberFormatException e) {
-                    System.out.println("[SISTEM] Format input '" + pilihanStr + "' bukan angka! Dilewati.");
+                    System.out.println("Format input '" + pilihanStr + "' bukan angka! Dilewati.");
                 }
             }
 
             if (jumlahLayananAwal == 0) {
-                System.out.println("[SISTEM] Tidak ada pelayanan valid yang dipilih. Kembali ke menu utama.");
+                System.out.println("Tidak ada pelayanan valid yang dipilih. Kembali ke menu utama.");
                 continue;
             }
             
@@ -190,7 +190,7 @@ public class Main {
                 input.nextLine(); 
                 
                 if (jamPilihan < 9 || jamPilihan > 22) {
-                    System.out.println("[SISTEM] Jam tidak valid! Salon hanya buka dari jam 9 sampai 22.");
+                    System.out.println("Jam tidak valid! Salon hanya buka dari jam 9 sampai 22.");
                     continue; 
                 }
 
@@ -213,14 +213,14 @@ public class Main {
                             if (!databaseKapsterJam[idxCari][kolomKapster]) {
                                 jamFinal = jamCari;
                                 databaseKapsterJam[idxCari][kolomKapster] = true;
-                                System.out.println("[ALGORITMA] Booking dialihkan ke Jam " + jamFinal + ".00");
+                                System.out.println("Booking dialihkan ke Jam " + jamFinal + ".00");
                                 ketemu = true;
                                 break;
                             }
                             jamCari++;
                         }
                         if (!ketemu) {
-                            System.out.println("[ALGORITMA] Maaf, kapster spesialis tersebut penuh sampai akhir operasional hari ini.");
+                            System.out.println("Maaf, kapster spesialis tersebut penuh sampai akhir operasional hari ini.");
                             jamFinal = -1;
                         }
                         break; 
@@ -237,7 +237,7 @@ public class Main {
             }
 
             if (jamFinal == -1) {
-                System.out.println("[SISTEM] Transaksi dibatalkan karena tidak menemukan kapster kosong.");
+                System.out.println("Transaksi dibatalkan karena tidak menemukan kapster kosong.");
                 continue;
             }
             
@@ -252,19 +252,19 @@ public class Main {
 
             if (shift.equals("Pagi")) {
                 if (kolomKapster == 1) {
-                    kapsterTerpilih = "Mas Budi (Spesialis Kimia - Shift Pagi)";
+                    kapsterTerpilih = "Mas Budi (Spesialis Smoothing & pewarnaan - Shift Pagi)";
                 } else {
                     kapsterTerpilih = "Mbak Siti (Spesialis Gunting & Treatment - Shift Pagi)";
                 }
             } else if (shift.equals("Siang")) {
                 if (kolomKapster == 1) {
-                    kapsterTerpilih = "Mbak Nana (Spesialis Kimia - Shift Siang)";
+                    kapsterTerpilih = "Mbak Nana (Spesialis Smoothing & pewarnaan - Shift Siang)";
                 } else {
                     kapsterTerpilih = "Mas Yahya (Spesialis Gunting & Treatment - Shift Siang)";
                 }
             } else {
                 if (kolomKapster == 1) {
-                    kapsterTerpilih = "mba Yuli (Spesialis Kimia - Shift Malam)";
+                    kapsterTerpilih = "mba Yuli (Spesialis Smoothing & pewarnaan - Shift Malam)";
                 } else {
                     kapsterTerpilih = "Mas Joko (Spesialis Gunting & Treatment - Shift Malam)";
                 }
@@ -300,7 +300,7 @@ public class Main {
                             int hargaTambahan = (Integer) hasilTambahan[1];
                             
                             if (namaTambahan.equals("Tidak Valid")) {
-                                System.out.println("[SISTEM] Kode menu '" + pilihanTambahan + "' tidak valid! Dilewati.");
+                                System.out.println("Kode menu '" + pilihanTambahan + "' tidak valid! Dilewati.");
                                 continue; 
                             }
                             if (rincianBaruValid.equals("")) {
@@ -327,9 +327,9 @@ public class Main {
                                 detailPelayanan += "\n                      " + b;
                             }
                             totalBiaya += totalBiayaTambahanValid; 
-                            System.out.println("[SISTEM] BERHASIL KONFIRMASI.");
+                            System.out.println("BERHASIL KONFIRMASI.");
                         } else {
-                            System.out.println("[SISTEM] PENAMBAHAN DIBATALKAN.");
+                            System.out.println("PENAMBAHAN DIBATALKAN.");
                         }
                     }
                 } else {
@@ -350,7 +350,7 @@ public class Main {
                     if (uangDiterima >= totalBiaya) {
                         break;
                     } else {
-                        System.out.println("[SISTEM] Uang Kurang!");
+                        System.out.println("Uang Kurang!");
                     }
                 }
             }
