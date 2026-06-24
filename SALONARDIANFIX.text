@@ -1,18 +1,43 @@
 import java.util.ArrayList;
 import java.util.Scanner;
 
-// Class untuk menyimpan data ringkas booking pelanggan
+// Class untuk menyimpan data booking pelanggan 
 class Transaksi {
     String nama;
     int jam;
     String treatment;
     String kapster;
+    // Atribut tambahan untuk fitur baru
+    String noHp;
+    String metodeBayar;
+    String statusPembayaran;
+    // Atribut tambahan untuk fitur Durasi
+    int durasiMenit;
+    int jamSelesaiMenit; // total menit dari jam 00:00, misal jam 9.00 = 540 menit
 
     public Transaksi(String nama, int jam, String treatment, String kapster) {
         this.nama = nama;
         this.jam = jam;
         this.treatment = treatment;
         this.kapster = kapster;
+        this.noHp = "-";
+        this.metodeBayar = "Cash";
+        this.statusPembayaran = "Belum Bayar";
+        this.durasiMenit = 60; // default jika lewat constructor lama
+        this.jamSelesaiMenit = (jam * 60) + 60;
+    }
+
+    // Overload Constructor untuk mendukung fitur baru + durasi
+    public Transaksi(String nama, String noHp, int jam, String treatment, String kapster, String metodeBayar, String statusPembayaran, int durasiMenit) {
+        this.nama = nama;
+        this.noHp = noHp;
+        this.jam = jam;
+        this.treatment = treatment;
+        this.kapster = kapster;
+        this.metodeBayar = metodeBayar;
+        this.statusPembayaran = statusPembayaran;
+        this.durasiMenit = durasiMenit;
+        this.jamSelesaiMenit = (jam * 60) + durasiMenit;
     }
 }
 
@@ -88,283 +113,434 @@ public class Main {
         return new Object[]{namaMenu, hargaMenu, kategoriKeahlian};
     }
 
+    // Menghitung akumulasi durasi pelayanan berdasarkan kategori menu terpilih
+    public static int hitungDurasiLayanan(int kodeMenu) {
+        switch (kodeMenu) {
+            case 1: return 30;  // Potong Rambut Pria
+            case 2: return 45;  // Potong Rambut Wanita
+            case 3: return 45 + 20; // Kombinasi Potong + Wash/Style
+            case 4: case 5: case 6: return 20; // Hair Wash / Blow / Curly
+            case 7: case 8: return 15;
+            case 9: case 10: case 13: return 120; // Hair Coloring / Toning / Bleaching
+            case 11: case 12: return 150; // Hair Treatment Premium / Fashion Colour
+            case 14: case 15: case 16: case 17: return 180; // Smoothing
+            case 18: return 240; // Rebonding / Premium Smoothing
+            case 19: return 60;  // Creambath
+            case 20: return 90;  // Hair Spa
+            case 21: case 22: case 23: case 24: return 60; // Treatment Masker/Terapi
+            default: return 0;
+        }
+    }
+
+    // Pengecekan overlap jadwal bertabrakan pada rentang menit kapster yang sama
+    public static boolean cekBentrokRentangWaktu(String namaKapster, int jamMulaiBaru, int totalDurasiBaru) {
+        int mulaiBaruMenit = jamMulaiBaru * 60;
+        int selesaiBaruMenit = mulaiBaruMenit + totalDurasiBaru;
+
+        for (Transaksi t : listBooking) {
+            if (t.kapster.equals(namaKapster)) {
+                int mulaiLamaMenit = t.jam * 60;
+                int selesaiLamaMenit = t.jamSelesaiMenit;
+
+                // Rumus Overlap Kondisional
+                if (mulaiBaruMenit < selesaiLamaMenit && selesaiBaruMenit > mulaiLamaMenit) {
+                    return true; 
+                }
+            }
+        }
+        return false;
+    }
+
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
         
         while (true) {
             System.out.println("\n=========================================================");
-            System.out.println("       SISTEM SALON ARDIAN ");
+            System.out.println("               SISTEM SALON ARDIAN ");
             System.out.println("=========================================================");
-            System.out.println("1. Tambah Transaksi Pelanggan Baru");
-            System.out.println("2. Lihat Daftar Booking Pelanggan (Urut)");
+            System.out.println("1. Masuk sebagai Customer (Booking)");
+            System.out.println("2. Masuk sebagai Admin (Manajemen)");
             System.out.println("3. Keluar Program");
-            System.out.print("Pilih Menu Utama (1/2/3): ");
-            int menuUtama = input.nextInt();
-            input.nextLine(); 
+            System.out.print("Pilih Akses (1/2/3): ");
+            int pilihanAkses = input.nextInt();
+            input.nextLine();
 
-            if (menuUtama == 3) {
+            if (pilihanAkses == 3) {
                 System.out.println("Terima kasih! Program selesai.");
                 break;
-            } else if (menuUtama == 2) {
-                System.out.println("\n======================================================================================================");
-                System.out.println("                                       DAFTAR BOOKING PELANGGAN                                       ");
-                System.out.println("======================================================================================================");
-                if (listBooking.isEmpty()) {
-                    System.out.println("Belum ada data booking yang tersimpan.");
+            } else if (pilihanAkses == 1) {
+                jalankanFiturBooking(input);
+            } else if (pilihanAkses == 2) {
+                System.out.print("Masukkan Username Admin: ");
+                String username = input.nextLine();
+                System.out.print("Masukkan Password Admin: ");
+                String password = input.nextLine();
+
+                if (username.equals("admin") && password.equals("admin123")) {
+                    jalankanMenuAdmin(input);
                 } else {
-                    // PERBAIKAN: %-s diganti dengan penentu lebar %-30s yang jelas
-                    System.out.printf("%-4s | %-15s | %-8s | %-30s | %-30s\n", "NO", "NAMA", "JAM", "TREATMENT ONSITE", "KAPSTER ALOKASI");
-                    System.out.println("------------------------------------------------------------------------------------------------------");
-                    for (int i = 0; i < listBooking.size(); i++) {
-                        Transaksi t = listBooking.get(i);
-                        String treatmentSatuBaris = t.treatment.replace("\n                      ", ", ");
-                        // PERBAIKAN: Format penentu lebar kolom disamakan
-                        System.out.printf("%-4d | %-15s | Jam %-2d.00 | %-30s | %-30s\n", (i + 1), t.nama, t.jam, treatmentSatuBaris, t.kapster);
-                    }
+                    System.out.println("[ERROR] Username atau Password salah! Akses ditolak.");
                 }
-                continue;
-            } else if (menuUtama != 1) {
+            } else {
                 System.out.println("Pilihan tidak valid!");
-                continue;
             }
-
-            // --- FASE 1: PROSES TRANSAKSI PELANGGAN ---
-            String statusPembayaran = "Belum Bayar";
-            String kapsterTerpilih = "";
-            int totalBiaya = 0; 
-            String detailPelayanan = "";
-
-            System.out.print("\nMasukkan Nama Pelanggan: ");
-            String nama = input.nextLine();
-            
-            tampilkanMenu();
-            
-            System.out.print("Pilih Perawatan Awal (Gunakan koma jika lebih dari 1, contoh: 1,24): ");
-            String inputMenu = input.nextLine(); 
-
-            String[] semuaPilihan = inputMenu.split(",");
-            String keahlianUtamaDibutuhkan = ""; 
-            int jumlahLayananAwal = 0;
-
-            for (String pilihanStr : semuaPilihan) {
-                try {
-                    int pilihanAwal = Integer.parseInt(pilihanStr.trim());
-                    Object[] hasilAwal = prosesPilihanMenu(pilihanAwal);
-                    String namaLayananAwal = (String) hasilAwal[0];
-                    int hargaLayananAwal = (Integer) hasilAwal[1];
-                    String keahlianDibutuhkan = (String) hasilAwal[2];
-                    
-                    if (namaLayananAwal.equals("Tidak Valid")) {
-                        System.out.println("Kode menu '" + pilihanAwal + "' salah! Layanan ini dilewati.");
-                        continue;
-                    }
-                    if (jumlahLayananAwal == 0) {
-                        keahlianUtamaDibutuhkan = keahlianDibutuhkan;
-                        detailPelayanan = namaLayananAwal + " (Rp" + hargaLayananAwal + ")";
-                    } else {
-                        detailPelayanan += "\n                      " + namaLayananAwal + " (Rp" + hargaLayananAwal + ")";
-                    }
-                    totalBiaya += hargaLayananAwal;
-                    jumlahLayananAwal++;
-                } catch (NumberFormatException e) {
-                    System.out.println("Format input '" + pilihanStr + "' bukan angka! Dilewati.");
-                }
-            }
-
-            if (jumlahLayananAwal == 0) {
-                System.out.println("Tidak ada pelayanan valid yang dipilih. Kembali ke menu utama.");
-                continue;
-            }
-            
-            int kolomKapster = 0; 
-            String tipeKapster = "Potong/Treatment";
-            if (keahlianUtamaDibutuhkan.equals("Pewarna") || keahlianUtamaDibutuhkan.equals("Smoothing")) {
-                kolomKapster = 1; 
-                tipeKapster = "Pewarna/Smoothing";
-            }
-
-            int jamFinal = 0;
-            while (true) {
-                System.out.print("Masukkan Jam Kedatangan yang Diinginkan (9 s.d. 22): ");
-                int jamPilihan = input.nextInt();
-                input.nextLine(); 
-                
-                if (jamPilihan < 9 || jamPilihan > 22) {
-                    System.out.println("Jam tidak valid! Salon hanya buka dari jam 9 sampai 22.");
-                    continue; 
-                }
-
-                int indexJam = jamPilihan - 9;
-                
-                if (databaseKapsterJam[indexJam][kolomKapster]) {
-                    System.out.println("\n[PERINGATAN] Kapster spesialis " + tipeKapster + " pada jam " + jamPilihan + ".00 sudah terisi!");
-                    System.out.println("Silakan pilih opsi penanganan:");
-                    System.out.println("1. Dialihkan otomatis oleh sistem ke jam berikutnya dengan spesialisasi yang sama");
-                    System.out.println("2. Input / Ganti jam sendiri secara manual");
-                    System.out.print("Pilihan Anda (1/2): ");
-                    int opsi = input.nextInt();
-                    input.nextLine(); 
-
-                    if (opsi == 1) {
-                        int jamCari = jamPilihan + 1;
-                        boolean ketemu = false;
-                        while (jamCari <= 22) {
-                            int idxCari = jamCari - 9;
-                            if (!databaseKapsterJam[idxCari][kolomKapster]) {
-                                jamFinal = jamCari;
-                                databaseKapsterJam[idxCari][kolomKapster] = true;
-                                System.out.println("Booking dialihkan ke Jam " + jamFinal + ".00");
-                                ketemu = true;
-                                break;
-                            }
-                            jamCari++;
-                        }
-                        if (!ketemu) {
-                            System.out.println("Maaf, kapster spesialis tersebut penuh sampai akhir operasional hari ini.");
-                            jamFinal = -1;
-                        }
-                        break; 
-                    } else {
-                        System.out.println(" Silakan ketik jam pengganti...");
-                        continue; 
-                    }
-                } else {
-                    databaseKapsterJam[indexJam][kolomKapster] = true;
-                    jamFinal = jamPilihan;
-                    System.out.println("Jam " + jamFinal + ".00 tersedia karena menggunakan kapster berbeda / masih kosong.");
-                    break;
-                }
-            }
-
-            if (jamFinal == -1) {
-                System.out.println("Transaksi dibatalkan karena tidak menemukan kapster kosong.");
-                continue;
-            }
-            
-            String shift = "";
-            if (jamFinal < 12.00) {
-                shift = "Pagi";
-            } else if (jamFinal < 17.00) {
-                shift = "Siang";
-            } else {
-                shift = "Malam";
-            }
-
-            if (shift.equals("Pagi")) {
-                if (kolomKapster == 1) {
-                    kapsterTerpilih = "Mas Budi (Spesialis Smoothing & pewarnaan - Shift Pagi)";
-                } else {
-                    kapsterTerpilih = "Mbak Siti (Spesialis Gunting & Treatment - Shift Pagi)";
-                }
-            } else if (shift.equals("Siang")) {
-                if (kolomKapster == 1) {
-                    kapsterTerpilih = "Mbak Nana (Spesialis Smoothing & pewarnaan - Shift Siang)";
-                } else {
-                    kapsterTerpilih = "Mas Yahya (Spesialis Gunting & Treatment - Shift Siang)";
-                }
-            } else {
-                if (kolomKapster == 1) {
-                    kapsterTerpilih = "mba Yuli (Spesialis Smoothing & pewarnaan - Shift Malam)";
-                } else {
-                    kapsterTerpilih = "Mas Joko (Spesialis Gunting & Treatment - Shift Malam)";
-                }
-            }
-            
-            System.out.println("\n--- NOTA REGISTRASI ANTREAN AWAL ---");
-            System.out.println("Nama Pelanggan    : " + nama);
-            System.out.println("Jam Booking Fix   : Jam " + jamFinal + ".00");
-            System.out.println("Rincian Perawatan : " + detailPelayanan);
-            System.out.println("Kapster Alokasi   : " + kapsterTerpilih);
-            System.out.println("-----------------------------------------------\n");
-            
-            boolean loopTambah = true;
-            while (loopTambah) {
-                System.out.print("Apakah pelanggan ingin menambah pelayanan lagi di tempat? (1 = YA, 0 = TIDAK): ");
-                int tambahLayanan = input.nextInt();
-                input.nextLine(); 
-                
-                if (tambahLayanan == 1) {
-                    tampilkanMenu(); 
-                    System.out.print("Pilih Menu Tambahan (Gunakan koma jika lebih dari 1, contoh: 19,21): ");
-                    String inputTambahan = input.nextLine();
-                    
-                    String[] semuaTambahan = inputTambahan.split(",");
-                    String rincianBaruValid = "";
-                    int totalBiayaTambahanValid = 0;
-                    
-                    for (String tambStr : semuaTambahan) {
-                        try {
-                            int pilihanTambahan = Integer.parseInt(tambStr.trim());
-                            Object[] hasilTambahan = prosesPilihanMenu(pilihanTambahan);
-                            String namaTambahan = (String) hasilTambahan[0];
-                            int hargaTambahan = (Integer) hasilTambahan[1];
-                            
-                            if (namaTambahan.equals("Tidak Valid")) {
-                                System.out.println("Kode menu '" + pilihanTambahan + "' tidak valid! Dilewati.");
-                                continue; 
-                            }
-                            if (rincianBaruValid.equals("")) {
-                                rincianBaruValid = namaTambahan + " (Rp" + hargaTambahan + ")";
-                            } else {
-                                rincianBaruValid += ", " + namaTambahan + " (Rp" + hargaTambahan + ")";
-                            }
-                            totalBiayaTambahanValid += hargaTambahan;
-                        } catch (NumberFormatException e) {
-                            System.out.println("Format input '" + tambStr + "' bukan angka! Dilewati.");
-                        }
-                    }
-                    
-                    if (totalBiayaTambahanValid > 0) {
-                        System.out.println("\n[KONFIRMASI ADMIN]");
-                        System.out.println("Yakin menambah: " + rincianBaruValid);
-                        System.out.print("Ketik 1 jika YA, ketik 0 jika TIDAK: ");
-                        int konfirmasi = input.nextInt();
-                        input.nextLine(); 
-                        
-                        if (konfirmasi == 1) {
-                            String[] barisBaru = rincianBaruValid.split(", ");
-                            for (String b : barisBaru) {
-                                detailPelayanan += "\n                      " + b;
-                            }
-                            totalBiaya += totalBiayaTambahanValid; 
-                            System.out.println("BERHASIL KONFIRMASI.");
-                        } else {
-                            System.out.println("PENAMBAHAN DIBATALKAN.");
-                        }
-                    }
-                } else {
-                    loopTambah = false; 
-                }
-            }
-            
-            System.out.println("\nPilih Metode Pembayaran: \n1. Cash / Tunai\n2. Transfer Bank");
-            System.out.print("Pilihan (1/2): ");
-            int metode = input.nextInt();
-            input.nextLine(); 
-            
-            if (metode == 1) {
-                while (true) {
-                    System.out.print("Masukkan jumlah uang tunai yang diterima: Rp");
-                    int uangDiterima = input.nextInt();
-                    input.nextLine(); 
-                    if (uangDiterima >= totalBiaya) {
-                        break;
-                    } else {
-                        System.out.println("Uang Kurang!");
-                    }
-                }
-            }
-            
-            statusPembayaran = "Lunas"; 
-            listBooking.add(new Transaksi(nama, jamFinal, detailPelayanan, kapsterTerpilih));
-            
-            System.out.println("\n--- NOTA FINAL LUNAS ---");
-            System.out.println("Nama Pelanggan    : " + nama);
-            System.out.println("Jam Pelayanan     : Jam " + jamFinal + ".00");
-            System.out.println("TOTAL TAGIHAN     : Rp" + totalBiaya);
-            System.out.println("Status Pembayaran : " + statusPembayaran);
-            System.out.println("---------------------------------------------\n");
         }
         input.close();
+    }
+
+    public static void jalankanFiturBooking(Scanner input) {
+        String statusPembayaran = "Belum Bayar";
+        String kapsterTerpilih = "";
+        int totalBiaya = 0; 
+        String detailPelayanan = "";
+        int akumulasiDurasi = 0;
+        int jumlahTreatmentTotal = 0; // Tambahan: Counter total item treatment
+
+        System.out.print("\nMasukkan Nama Pelanggan: ");
+        String nama = input.nextLine();
+        
+        System.out.print("Masukkan Nomor HP Pelanggan: ");
+        String noHp = input.nextLine();
+        
+        tampilkanMenu();
+        
+        System.out.print("Pilih Perawatan Awal (Gunakan koma jika lebih dari 1, contoh: 1,24): ");
+        String inputMenu = input.nextLine(); 
+
+        String[] semuaPilihan = inputMenu.split(",");
+        String keahlianUtamaDibutuhkan = ""; 
+        int jumlahLayananAwal = 0;
+
+        ArrayList<Integer> listKodeTerpilih = new ArrayList<>();
+        for (String pilihanStr : semuaPilihan) {
+            try {
+                int pilihanAwal = Integer.parseInt(pilihanStr.trim());
+                Object[] hasilAwal = prosesPilihanMenu(pilihanAwal);
+                String namaLayananAwal = (String) hasilAwal[0];
+                int hargaLayananAwal = (Integer) hasilAwal[1];
+                String keahlianDibutuhkan = (String) hasilAwal[2];
+                
+                if (namaLayananAwal.equals("Tidak Valid")) {
+                    System.out.println("Kode menu '" + pilihanAwal + "' salah! Layanan ini dilewati.");
+                    continue;
+                }
+                listKodeTerpilih.add(pilihanAwal);
+                akumulasiDurasi += hitungDurasiLayanan(pilihanAwal);
+                jumlahTreatmentTotal++;
+
+                if (jumlahLayananAwal == 0) {
+                    keahlianUtamaDibutuhkan = keahlianDibutuhkan;
+                    detailPelayanan = namaLayananAwal + " (Rp" + hargaLayananAwal + ")";
+                } else {
+                    detailPelayanan += "\n                      " + namaLayananAwal + " (Rp" + hargaLayananAwal + ")";
+                }
+                totalBiaya += hargaLayananAwal;
+                jumlahLayananAwal++;
+            } catch (NumberFormatException e) {
+                System.out.println("Format input '" + pilihanStr + "' bukan angka! Dilewati.");
+            }
+        }
+
+        if (jumlahLayananAwal == 0) {
+            System.out.println("Tidak ada pelayanan valid yang dipilih. Kembali ke menu utama.");
+            return;
+        }
+        
+        int kolomKapster = 0; 
+        String tipeKapster = "Potong/Treatment";
+        if (keahlianUtamaDibutuhkan.equals("Pewarna") || keahlianUtamaDibutuhkan.equals("Smoothing")) {
+            kolomKapster = 1; 
+            tipeKapster = "Pewarna/Smoothing";
+        }
+
+        int jamFinal = 0;
+        while (true) {
+            System.out.print("Masukkan Jam Kedatangan yang Diinginkan (9 s.d. 22): ");
+            int jamPilihan = input.nextInt();
+            input.nextLine(); 
+            
+            if (jamPilihan < 9 || jamPilihan > 22) {
+                System.out.println("Jam tidak valid! Salon hanya buka dari jam 9 sampai 22.");
+                continue; 
+            }
+
+            int totalMenitSelesai = (jamPilihan * 60) + akumulasiDurasi;
+            if (totalMenitSelesai > (22 * 60)) {
+                System.out.printf("[DITOLAK] Waktu pelayanan (%d menit) melebihi jam operasional salon (Tutup pukul 22.00). Selesai diprediksi pukul %02d:%02d.\n", 
+                        akumulasiDurasi, totalMenitSelesai / 60, totalMenitSelesai % 60);
+                System.out.println("Silakan pilih jam kedatangan yang lebih awal.");
+                continue;
+            }
+
+            String kapsterUji = "";
+            String shiftUji = (jamPilihan < 12) ? "Pagi" : (jamPilihan < 17) ? "Siang" : "Malam";
+            if (shiftUji.equals("Pagi")) {
+                kapsterUji = (kolomKapster == 1) ? "Mas Budi (Spesialis Smoothing & pewarnaan - Shift Pagi)" : "Mbak Siti (Spesialis Gunting & Treatment - Shift Pagi)";
+            } else if (shiftUji.equals("Siang")) {
+                kapsterUji = (kolomKapster == 1) ? "Mbak Nana (Spesialis Smoothing & pewarnaan - Shift Siang)" : "Mas Yahya (Spesialis Gunting & Treatment - Shift Siang)";
+            } else {
+                kapsterUji = (kolomKapster == 1) ? "mba Yuli (Spesialis Smoothing & pewarnaan - Shift Malam)" : "Mas Joko (Spesialis Gunting & Treatment - Shift Malam)";
+            }
+
+            if (cekBentrokRentangWaktu(kapsterUji, jamPilihan, akumulasiDurasi)) {
+                System.out.println("\n[PERINGATAN] Kapster alokasi (" + kapsterUji.split(" \\(")[0] + ") pada rentang jam tersebut sedang melayani pelanggan lain!");
+                System.out.println("Silakan pilih opsi penanganan:");
+                System.out.println("1. Dialihkan otomatis oleh sistem ke jam berikutnya");
+                System.out.println("2. Input / Ganti jam sendiri secara manual");
+                System.out.print("Pilihan Anda (1/2): ");
+                int opsi = input.nextInt();
+                input.nextLine(); 
+
+                if (opsi == 1) {
+                    int jamCari = jamPilihan + 1;
+                    boolean ketemu = false;
+                    while (jamCari <= 22) {
+                        if ((jamCari * 60) + akumulasiDurasi <= (22 * 60) && !cekBentrokRentangWaktu(kapsterUji, jamCari, akumulasiDurasi)) {
+                            jamFinal = jamCari;
+                            System.out.println("Booking dialihkan ke Jam " + jamFinal + ".00");
+                            ketemu = true;
+                            break;
+                        }
+                        jamCari++;
+                    }
+                    if (!ketemu) {
+                        System.out.println("Maaf, jadwal kapster tersebut penuh/tidak mencukupi durasi sisa operasional hari ini.");
+                        jamFinal = -1;
+                    }
+                    break; 
+                } else {
+                    continue; 
+                }
+            } else {
+                int indexJam = jamPilihan - 9;
+                databaseKapsterJam[indexJam][kolomKapster] = true;
+                jamFinal = jamPilihan;
+                break;
+            }
+        }
+
+        if (jamFinal == -1) {
+            System.out.println("Transaksi dibatalkan karena tidak menemukan slot kapster yang kosong.");
+            return;
+        }
+        
+        String shift = (jamFinal < 12) ? "Pagi" : (jamFinal < 17) ? "Siang" : "Malam";
+        if (shift.equals("Pagi")) {
+            kapsterTerpilih = (kolomKapster == 1) ? "Mas Budi (Spesialis Smoothing & pewarnaan - Shift Pagi)" : "Mbak Siti (Spesialis Gunting & Treatment - Shift Pagi)";
+        } else if (shift.equals("Siang")) {
+            kapsterTerpilih = (kolomKapster == 1) ? "Mbak Nana (Spesialis Smoothing & pewarnaan - Shift Siang)" : "Mas Yahya (Spesialis Gunting & Treatment - Shift Siang)";
+        } else {
+            kapsterTerpilih = (kolomKapster == 1) ? "mba Yuli (Spesialis Smoothing & pewarnaan - Shift Malam)" : "Mas Joko (Spesialis Gunting & Treatment - Shift Malam)";
+        }
+        
+        System.out.println("\n--- NOTA REGISTRASI ANTREAN AWAL ---");
+        System.out.println("Nama Pelanggan    : " + nama);
+        System.out.println("Jam Booking Fix   : Jam " + jamFinal + ".00 (Estimasi durasi: " + akumulasiDurasi + " Menit)");
+        System.out.println("Rincian Perawatan : " + detailPelayanan);
+        System.out.println("Kapster Alokasi   : " + kapsterTerpilih);
+        System.out.println("-----------------------------------------------\n");
+        
+        boolean loopTambah = true;
+        while (loopTambah) {
+            System.out.print("Apakah pelanggan ingin menambah pelayanan lagi di tempat? (1 = YA, 0 = TIDAK): ");
+            int tambahLayanan = input.nextInt();
+            input.nextLine(); 
+            
+            if (tambahLayanan == 1) {
+                tampilkanMenu(); 
+                System.out.print("Pilih Menu Tambahan (Gunakan koma jika lebih dari 1, contoh: 19,21): ");
+                String inputTambahan = input.nextLine();
+                
+                String[] semuaTambahan = inputTambahan.split(",");
+                String rincianBaruValid = "";
+                int totalBiayaTambahanValid = 0;
+                int durasiTambahanValid = 0;
+                int counterTambahan = 0;
+                
+                for (String tambStr : semuaTambahan) {
+                    try {
+                        int pilihanTambahan = Integer.parseInt(tambStr.trim());
+                        Object[] hasilTambahan = prosesPilihanMenu(pilihanTambahan);
+                        String namaTambahan = (String) hasilTambahan[0];
+                        int hargaTambahan = (Integer) hasilTambahan[1];
+                        
+                        if (namaTambahan.equals("Tidak Valid")) {
+                            System.out.println("Kode menu '" + pilihanTambahan + "' tidak valid! Dilewati.");
+                            continue; 
+                        }
+                        if (rincianBaruValid.equals("")) {
+                            rincianBaruValid = namaTambahan + " (Rp" + hargaTambahan + ")";
+                        } else {
+                            rincianBaruValid += ", " + namaTambahan + " (Rp" + hargaTambahan + ")";
+                        }
+                        totalBiayaTambahanValid += hargaTambahan;
+                        durasiTambahanValid += hitungDurasiLayanan(pilihanTambahan);
+                        counterTambahan++;
+                    } catch (NumberFormatException e) {
+                        System.out.println("Format input '" + tambStr + "' bukan angka! Dilewati.");
+                    }
+                }
+                
+                if (totalBiayaTambahanValid > 0) {
+                    if ((jamFinal * 60) + akumulasiDurasi + durasiTambahanValid > (22 * 60)) {
+                        System.out.println("[BATAL ADMIN] Penambahan menu ditolak karena total durasi akan melampaui jam operasional 22.00!");
+                        continue;
+                    }
+                    
+                    System.out.println("\n[KONFIRMASI ADMIN]");
+                    System.out.println("Yakin menambah: " + rincianBaruValid + " (Durasi +" + durasiTambahanValid + " menit)");
+                    System.out.print("Ketik 1 jika YA, ketik 0 jika TIDAK: ");
+                    int konfirmasi = input.nextInt();
+                    input.nextLine(); 
+                    
+                    if (konfirmasi == 1) {
+                        String[] barisBaru = rincianBaruValid.split(", ");
+                        for (String b : barisBaru) {
+                            detailPelayanan += "\n                      " + b;
+                        }
+                        totalBiaya += totalBiayaTambahanValid; 
+                        akumulasiDurasi += durasiTambahanValid;
+                        jumlahTreatmentTotal += counterTambahan;
+                        System.out.println("BERHASIL KONFIRMASI.");
+                    } else {
+                        System.out.println("PENAMBAHAN DIBATALKAN.");
+                    }
+                }
+            } else {
+                loopTambah = false; 
+            }
+        }
+        
+        System.out.println("\nPilih Metode Pembayaran: \n1. Cash / Tunai\n2. Transfer Bank");
+        System.out.print("Pilihan (1/2): ");
+        int metode = input.nextInt();
+        input.nextLine(); 
+        
+        String metodeStr = "";
+        int uangDiterima = 0;
+        int kembalian = 0;
+
+        if (metode == 1) {
+            metodeStr = "Cash";
+            while (true) {
+                System.out.print("Masukkan jumlah uang tunai yang diterima: Rp");
+                uangDiterima = input.nextInt();
+                input.nextLine(); 
+                if (uangDiterima >= totalBiaya) {
+                    kembalian = uangDiterima - totalBiaya;
+                    break;
+                } else {
+                    System.out.println("Uang Kurang!");
+                }
+            }
+            statusPembayaran = "Lunas";
+        } else {
+            metodeStr = "Transfer";
+            statusPembayaran = "Menunggu Verifikasi";
+            System.out.println("[INFO] Silakan transfer ke nomor rekening Salon: 123-456-789 (Bank BCA).");
+        }
+        
+        listBooking.add(new Transaksi(nama, noHp, jamFinal, detailPelayanan, kapsterTerpilih, metodeStr, statusPembayaran, akumulasiDurasi));
+        
+        System.out.println("\n--- NOTA FINAL BOOKING ---");
+        System.out.println("Nama Pelanggan    : " + nama);
+        System.out.println("Nomor HP          : " + noHp);
+        System.out.println("Jam Pelayanan     : Jam " + jamFinal + ".00 s.d " + ((jamFinal * 60 + akumulasiDurasi) / 60) + ":" + String.format("%02d", (jamFinal * 60 + akumulasiDurasi) % 60));
+        System.out.println("Total Treatment   : " + jumlahTreatmentTotal + " Layanan (" + akumulasiDurasi + " Menit)");
+        System.out.println("---------------------------------------------");
+        System.out.println("TOTAL TAGIHAN     : Rp" + totalBiaya);
+        System.out.println("Metode Pembayaran : " + metodeStr);
+        System.out.println("Status Pembayaran : " + statusPembayaran);
+        
+        // Menampilkan info pembayaran tunai & kembalian jika menggunakan metode Cash
+        if (metodeStr.equals("Cash")) {
+            System.out.println("Uang Diterima     : Rp" + uangDiterima);
+            System.out.println("Uang Kembalian    : Rp" + kembalian);
+        }
+        System.out.println("---------------------------------------------\n");
+    }
+
+    public static void jalankanMenuAdmin(Scanner input) {
+        while (true) {
+            System.out.println("\n=========================================================");
+            System.out.println("               PANEL MANAJEMEN ADMIN");
+            System.out.println("=========================================================");
+            System.out.println("1. Lihat Seluruh Daftar Booking Pelanggan");
+            System.out.println("2. Verifikasi Pembayaran Transfer");
+            System.out.println("3. Kembali ke Menu Login");
+            System.out.print("Pilih Menu Admin (1/2/3): ");
+            int menuAdmin = input.nextInt();
+            input.nextLine();
+
+            if (menuAdmin == 3) {
+                break;
+            } else if (menuAdmin == 1) {
+                tampilkanDaftarBookingAdmin();
+            } else if (menuAdmin == 2) {
+                verifikasiPembayaranAdmin(input);
+            } else {
+                System.out.println("Pilihan tidak valid!");
+            }
+        }
+    }
+
+    public static void tampilkanDaftarBookingAdmin() {
+        System.out.println("\n=================================================================================================================================================");
+        System.out.println("                                                       DAFTAR MASTER BOOKING PELANGGAN (ADMIN)");
+        System.out.println("=================================================================================================================================================");
+        if (listBooking.isEmpty()) {
+            System.out.println("Belum ada data booking yang tersimpan.");
+        } else {
+            System.out.printf("%-3s | %-12s | %-13s | %-12s | %-20s | %-35s | %-7s | %-15s\n", 
+                    "NO", "NAMA", "NO HP", "DURASI (WKT)", "TREATMENT ONSITE", "KAPSTER ALOKASI", "METODE", "STATUS");
+            System.out.println("-------------------------------------------------------------------------------------------------------------------------------------------------");
+            for (int i = 0; i < listBooking.size(); i++) {
+                Transaksi t = listBooking.get(i);
+                String treatmentSatuBaris = t.treatment.replace("\n                      ", ", ");
+                String kapsterRingkas = t.kapster.split(" - ")[0]; 
+                
+                String formatWaktu = String.format("%d Menit (%02d.00)", t.durasiMenit, t.jam);
+                
+                System.out.printf("%-3d | %-12s | %-13s | %-12s | %-20s | %-35s | %-7s | %-15s\n", 
+                        (i + 1), t.nama, t.noHp, formatWaktu, 
+                        (treatmentSatuBaris.length() > 20 ? treatmentSatuBaris.substring(0, 17) + "..." : treatmentSatuBaris), 
+                        kapsterRingkas, t.metodeBayar, t.statusPembayaran);
+            }
+        }
+        System.out.println("=================================================================================================================================================");
+    }
+
+    public static void verifikasiPembayaranAdmin(Scanner input) {
+        System.out.println("\n=========================================================");
+        System.out.println("             VERIFIKASI PEMBAYARAN TRANSFER              ");
+        System.out.println("=========================================================");
+        
+        ArrayList<Integer> indeksMenunggu = new ArrayList<>();
+        int nomorUrutTampil = 1;
+
+        for (int i = 0; i < listBooking.size(); i++) {
+            if (listBooking.get(i).metodeBayar.equals("Transfer") && listBooking.get(i).statusPembayaran.equals("Menunggu Verifikasi")) {
+                indeksMenunggu.add(i);
+                System.out.println("[" + nomorUrutTampil + "] Pelanggan: " + listBooking.get(i).nama + " | Jam: " + listBooking.get(i).jam + ".00");
+                nomorUrutTampil++;
+            }
+        }
+
+        if (indeksMenunggu.isEmpty()) {
+            System.out.println("Tidak ada pembayaran Transfer yang sedang menunggu verifikasi.");
+            return;
+        }
+
+        System.out.print("\nPilih Nomor Data yang ingin diverifikasi menjadi LUNAS: ");
+        int pilihanData = input.nextInt();
+        input.nextLine();
+
+        if (pilihanData > 0 && pilihanData <= indeksMenunggu.size()) {
+            int indeksAsli = indeksMenunggu.get(pilihanData - 1);
+            listBooking.get(indeksAsli).statusPembayaran = "Lunas";
+            System.out.println("[SUKSES] Status pembayaran Pelanggan '" + listBooking.get(indeksAsli).nama + "' berhasil diubah menjadi LUNAS!");
+        } else {
+            System.out.println("[ERROR] Nomor pilihan tidak valid.");
+        }
     }
 }
